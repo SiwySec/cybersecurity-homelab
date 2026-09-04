@@ -1,2 +1,5 @@
-# cybersecurity-homelab
-Documentation, network diagrams, and tutorials for my cybersecurity home lab.
+
+My Cybersecurity Home Lab & Tutorials
+
+Welcome to my personal Cybersecurity Home Lab documentation repository! 
+
