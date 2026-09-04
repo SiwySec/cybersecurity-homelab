@@ -2,9 +2,10 @@ Step-by-step guide on installing a Luanti (Minecraft-like) server with the **Vox
 
 ## Step 1: System Update & Tools Installation
 
+```
 sudo apt update && sudo apt upgrade -y
 sudo apt install -y docker.io docker-compose-v2 git unzip
-
+```
 ## Step 2: Granting Permissions to Run Docker (Without Sudo)
 
 
