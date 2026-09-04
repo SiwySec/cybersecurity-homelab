@@ -7,7 +7,6 @@ sudo apt install -y docker.io docker-compose-v2 git unzip
 
 ## Step 2: Granting Permissions to Run Docker (Without Sudo)
 
-By default, Docker requires administrator privileges. Add your user (e.g., `ubuntu`) to the `docker` group:
 
 By default, Docker requires administrator privileges. Add your user (e.g., `ubuntu`) to the `docker` group:
 
