@@ -19,9 +19,9 @@ The Uncomplicated Firewall (UFW) is installed by default in Ubuntu, but it is in
 
 1. Set the default rules (deny all incoming traffic; allow all outgoing traffic):
   
-  Shell
   
-  ```
+  
+  ```Shell
   sudo ufw default deny incoming
   sudo ufw default allow outgoing
   ```
