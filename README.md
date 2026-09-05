@@ -1,7 +1,7 @@
 
 The goal of this project is to set up a cybersecurity home lab, accompanied by a comprehensive guide and documentation.
 
-# 🖥️ Homelab Infrastructure & Network Topology
+#  Homelab Infrastructure & Network Topology
 
 Welcome to my Homelab repository! This project documents my home laboratory setup, network segmentation, hardware components, and hosted services.
 
