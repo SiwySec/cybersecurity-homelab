@@ -10,7 +10,7 @@ Welcome to my Homelab repository! This project documents my home laboratory setu
 ## 📐 Network Topology
 
 <p align="center">
-  <img src="./docs/topology.png" alt="Homelab Network Topology" width="850">
+  <img src="./topology.png" alt="Homelab Network Topology" width="850">
 </p>
 
 ---
