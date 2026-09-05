@@ -15,7 +15,7 @@ Welcome to my Homelab repository! This project documents my home laboratory setu
 
 ---
 
-## 🌐 Network Addressing & Device Inventory
+##  Network Addressing & Device Inventory
 
 | Device / Host | Role / OS | IP Address / Subnet | Description |
 | :--- | :--- | :--- | :--- |
