@@ -127,7 +127,6 @@ Fail2ban scans system logs for suspicious activity (e.g., repeated login attempt
   
 4. Find the `[sshd]` section (you can use `Ctrl + W` in the nano editor and type `[sshd]`). Change the default port to your custom one (e.g., `2222`) and adjust the aggressiveness parameters according to your preference:
   
-  Ini, TOML
   
   ```
   [sshd]
