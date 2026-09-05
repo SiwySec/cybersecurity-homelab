@@ -7,7 +7,7 @@ Welcome to my Homelab repository! This project documents my home laboratory setu
 
 ---
 
-## 📐 Network Topology
+##  Network Topology
 
 <p align="center">
   <img src="./topology.png" alt="Homelab Network Topology" width="850">
@@ -30,7 +30,7 @@ Welcome to my Homelab repository! This project documents my home laboratory setu
 
 ---
 
-## 📦 Hosted Virtual Machines & Containers (Proxmox VE)
+##  Hosted Virtual Machines & Containers (Proxmox VE)
 
 * **Nextcloud**: Private cloud storage and file synchronization.
 * **Splunk SIEM**: Log aggregation and security monitoring (ingesting logs from local nodes & external VPS).
@@ -39,7 +39,7 @@ Welcome to my Homelab repository! This project documents my home laboratory setu
 
 ---
 
-## 🔒 Traffic Flow & VPN Integration
+##  Traffic Flow & VPN Integration
 
 1. **Lab Isolation**: The lab operates on its own dedicated `192.168.5.0/24` subnet behind a pfSense firewall, isolated from the primary home network (`192.168.1.0/24`).
 2. **VPS & Splunk Telemetry**: An encrypted tunnel (e.g., WireGuard / OpenVPN) connects the external VPS to the internal **Splunk** instance, allowing secure log collection without exposing internal services directly to the public internet.
