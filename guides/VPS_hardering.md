@@ -7,7 +7,7 @@ Below is a safe, step-by-step chronological guide for **Ubuntu 26.04**.
 
 Before proceeding with the configuration, make sure the operating system and all packages are updated to their latest stable versions:
 
-```shell
+```
 sudo apt update && sudo apt upgrade -y
 ```
 
@@ -21,14 +21,13 @@ The Uncomplicated Firewall (UFW) is installed by default in Ubuntu, but it is in
   
   
   
-  ```Shell
+  ```
   sudo ufw default deny incoming
   sudo ufw default allow outgoing
   ```
   
 2. Allow traffic on the new SSH port:
   
-  Shell
   
   ```
   sudo ufw allow 2222/tcp
@@ -36,7 +35,6 @@ The Uncomplicated Firewall (UFW) is installed by default in Ubuntu, but it is in
   
 3. Enable the firewall:
   
-  Shell
   
   ```
   sudo ufw enable
@@ -46,7 +44,6 @@ The Uncomplicated Firewall (UFW) is installed by default in Ubuntu, but it is in
   
 4. Check the status of the firewall rules:
   
-  Shell
   
   ```
   sudo ufw status verbose
@@ -61,7 +58,6 @@ Therefore, simply restarting the `ssh` service after modifying the configuration
 
 1. Open the SSH configuration file:
   
-  Shell
   
   ```
   sudo nano /etc/ssh/sshd_config
@@ -77,7 +73,6 @@ Therefore, simply restarting the `ssh` service after modifying the configuration
   
 4. **Key step for Ubuntu 26.04:** Reload the systemd manager configuration (which triggers OpenSSH's internal socket generator) and restart the SSH socket:
   
-  Shell
   
   ```
   sudo systemctl daemon-reload
@@ -86,7 +81,6 @@ Therefore, simply restarting the `ssh` service after modifying the configuration
   
 5. Check if the system is correctly listening on the new port:
   
-  Shell
   
   ```
   sudo ss -tulpn | grep ssh
@@ -99,7 +93,6 @@ Therefore, simply restarting the `ssh` service after modifying the configuration
 
 Open a **completely new terminal** on your local machine (Linux Mint) and try to connect to the server using the new port:
 
-Shell
 
 ```
 ssh -p 2222 tester@server_IP_address
@@ -113,7 +106,6 @@ Fail2ban scans system logs for suspicious activity (e.g., repeated login attempt
 
 1. Install the package:
   
-  Shell
   
   ```
   sudo apt install fail2ban -y
@@ -121,7 +113,6 @@ Fail2ban scans system logs for suspicious activity (e.g., repeated login attempt
   
 2. Copy the default configuration file to a `.local` file (so your changes are not overwritten during future package updates):
   
-  Shell
   
   ```
   sudo cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
@@ -129,7 +120,6 @@ Fail2ban scans system logs for suspicious activity (e.g., repeated login attempt
   
 3. Open the configuration file for editing:
   
-  Shell
   
   ```
   sudo nano /etc/fail2ban/jail.local
@@ -158,7 +148,6 @@ Fail2ban scans system logs for suspicious activity (e.g., repeated login attempt
     
 5. Save the file and restart the Fail2ban service to load the new configuration:
   
-  Shell
   
   ```
   sudo systemctl enable --now fail2ban
@@ -167,7 +156,6 @@ Fail2ban scans system logs for suspicious activity (e.g., repeated login attempt
   
 6. You can check the status of your SSH protection at any time with the following command:
   
-  Shell
   
   ```
   sudo fail2ban-client status sshd
@@ -186,7 +174,6 @@ As an administrator, you might not always remember to log in daily and run `apt 
 
 - **Installation:**
   
-  Shell
   
   ```
   sudo apt install unattended-upgrades -y
@@ -194,7 +181,6 @@ As an administrator, you might not always remember to log in daily and run `apt 
   
 - **Enable:**
   
-  Shell
   
   ```
   sudo dpkg-reconfigure -plow unattended-upgrades
@@ -216,7 +202,6 @@ If you plan to deploy applications using Docker, you need to be aware of a major
 
 It is good practice to occasionally check if anyone is attempting to scan your new port. You can do this with:
 
-Shell
 
 ```
 sudo grep "Failed password" /var/log/auth.log
@@ -224,7 +209,6 @@ sudo grep "Failed password" /var/log/auth.log
 
 Or check Fail2ban activity:
 
-Shell
 
 ```
 sudo fail2ban-client status sshd
