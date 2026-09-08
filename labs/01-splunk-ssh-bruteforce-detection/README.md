@@ -116,11 +116,3 @@ Host & Cloud Security: Linux PAM auditing, OpenSSH daemon security profiles, pri
 
 Detection Engineering: Alert thresholding, cron-based scheduling, SOC incident life-cycle.
 
-
-Kliknij zielony przycisk **Commit changes** (w prawym górnym rogu edytora), aby opublikować dokumentację.
-
-<Elicitations message="Gotowe do publikacji?">
-  <Elicitation label="Opublikowałem, sprawdźmy stronę" query="Opublikowałem plik README.md, czy zdjęcia wyświetlają się poprawnie?"/>
-  <Elicitation label="Problem z wyświetlaniem zdjęć" query="Któreś zdjęcie się nie ładuje na GitHubie, jak sprawdzić dlaczego?"/>
-</Elicitations>
-
