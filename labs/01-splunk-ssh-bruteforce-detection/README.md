@@ -1,90 +1,126 @@
-SSH Brute Force Detection with Splunk
+Markdown
+# SSH Brute Force Detection and Automated Alerting with Splunk SIEM
 
-This project shows how I use Splunk to detect a SSH brute force attack in my home lab. I generate the attack myself with Kali Linux, then find it in Splunk using a search query, and turn that query into an alert.
+## Overview
+This hands-on cybersecurity project simulates a real-world external brute force attack against a hardened Linux server and implements an end-to-end detection and alerting pipeline using **Splunk Enterprise SIEM**.
 
----
-
-## Goal
-
-The goal is to detect multiple failed SSH login attempts from the same IP address in a short time window, which is a common sign of a brute force attack.
+The objective was to gain practical experience with telemetry ingestion, Search Processing Language (SPL) query development, field extraction using regular expressions, and SOC incident generation, followed by post-engagement host hardening.
 
 ---
 
-## Lab Setup
+## Architecture & Lab Topology
 
-| Component | Role |
-| --- | --- |
-| **Kali Linux VM** | Attacker machine, runs the brute force attempt |
-| **Target VM (Ubuntu)** | Victim machine with SSH enabled |
-| **Splunk SIEM** | Collects and analyzes the logs |
-| **Splunk Universal Forwarder** | Installed on the target VM, sends `/var/log/auth.log` to Splunk |
+```text
++---------------------------+             +-------------------------------+
+|  Attacker Machine (Kali)  |  Internet   |      Target Host (Ubuntu)     |
+|     IP: 90.248.10.51      | ----------> |     Public IP: 51.195.218.73  |
+|      Tool: THC Hydra      |  (Port 22)  |   Log: /var/log/auth.log      |
++---------------------------+             +---------------+---------------+
+                                                          |
+                                           Splunk Forwarder (Port 9997)
+                                              via WireGuard / VPN
+                                                          v
+                                          +---------------+---------------+
+                                          |     Splunk Enterprise SIEM    |
+                                          |      (Hosted on Proxmox)      |
+                                          |          192.168.5.106        |
+                                          +-------------------------------+
+Target Host: Hardened Ubuntu VPS hosted externally.
 
----
+Attacker System: Kali Linux performing password spray and dictionary attacks.
 
-## Step 1: Generate the Attack
+Log Ingestion: Splunk Universal Forwarder running as a dedicated system user (splunkfwd) shipping authentication telemetry across an encrypted private VPN tunnel.
 
-From the Kali VM, I used `hydra` to attempt several SSH logins against the target with a wordlist of common passwords:
+SIEM Platform: Splunk Enterprise running locally inside a Proxmox virtualized environment.
 
-```
-hydra -l testuser -P /usr/share/wordlists/rockyou.txt ssh://192.168.5.X
-```
+Step 1: Controlled Environment Preparation & Hardening Bypass
+To simulate a realistic compromise vector against an otherwise key-only hardened VPS, a controlled exception was established for a decoy user (testuser) while maintaining global key-based security.
 
-This creates a burst of failed login attempts in the target's `auth.log`, which gets forwarded to Splunk.
+Ini, TOML
+# /etc/ssh/sshd_config
+Match User testuser
+    PasswordAuthentication yes
+Step 2: Splunk Forwarder Configuration & Telemetry Routing
+The Splunk Universal Forwarder was deployed on the VPS to tail /var/log/auth.log. The forwarding account was assigned to the adm group to grant read access to system log files without requiring root execution privileges.
 
----
+Forwarder Configuration (/opt/splunkforwarder/etc/system/local/inputs.conf):
 
-## Step 2: Find the Attack in Splunk
+Ini, TOML
+[default]
+host = vps-target
 
-In Splunk, I searched the forwarded logs for failed password events:
+[monitor:///var/log/auth.log]
+disabled = 0
+sourcetype = linux_secure
+index = main
+Outputs Configuration (/opt/splunkforwarder/etc/system/local/outputs.conf):
 
-spl
+Ini, TOML
+[tcpout]
+defaultGroup = default-autolb-group
 
-```spl
-index=linux_logs sourcetype=linux_secure "Failed password"
+[tcpout:default-autolb-group]
+server = 192.168.5.106:9997
+Step 3: Simulating the Attack (THC Hydra)
+From the Kali Linux system, a dictionary-based brute force attack was executed against port 22 on the target host using hydra and the standard rockyou.txt wordlist. Concurrency was limited (-t 4) to ensure sustained interaction with the daemon without triggering immediate connection resets.
+
+Bash
+hydra -l testuser -P /usr/share/wordlists/rockyou.txt ssh://51.195.218.73 -t 4
+Step 4: Investigating and Aggregating Telemetry in Splunk
+On modern Linux distributions, SSH authentication failures trigger PAM warning records and rate-limiting connection closes.
+
+To identify the malicious IP address and quantify the attack volume, an SPL query was developed using field extraction via regular expressions (rex):
+
+Splunk SPL
+index=main sourcetype=linux_secure ("authentication failures" OR "Failed password") host="vps-target"
+| rex "rhost=(?<src_ip>\d+\.\d+\.\d+\.\d+)"
 | stats count by src_ip
-| where count > 5
-```
+| where count > 3
+The query successfully identified the source IP (90.248.10.51) and aggregated repeated unsuccessful attempts within the evaluation window.
 
-This query counts failed login attempts grouped by source IP, and only shows IPs with more than 5 failures. The Kali VM's IP shows up clearly with a high count.
+Step 5: Automated Detection & Scheduled Alert Configuration
+To automate incident detection, the SPL query was operationalized into a scheduled alert within Splunk:
 
----
+Alert Title: SSH Brute Force Attempt Detected
 
-## Step 3: Turn It into an Alert
+Trigger Condition: Number of results is greater than 0
 
-I saved the search as an alert that runs every 5 minutes and triggers when the condition is met.
+Schedule: Cron schedule evaluated every 5 minutes (*/5 * * * *)
 
-| Setting | Value |
-| --- | --- |
-| Search | same query as above |
-| Schedule | Every 5 minutes |
-| Trigger condition | Number of results > 0 |
-| Action | Add to Triggered Alerts list |
+Time Range: Past 24 hours (sliding evaluation window)
 
-Screenshot: `screenshots/alert-config.png`
+Trigger Action: Add to Triggered Alerts with High severity
 
----
+Step 6: Incident Generation Verification
+Once the scheduled cron job evaluated the indexed events, the alert fired as designed, generating a high-priority incident visible to SOC analysts.
 
-## Step 4: Result
+Step 7: Post-Lab Remediation & Clean-up
+Following successful verification of the detection workflow, the host was restored to its hardened security baseline:
 
-Screenshot: `screenshots/splunk-search-results.png`
+Reverted SSH Configuration: Removed the Match User directive in /etc/ssh/sshd_config and re-applied strict public key-only authentication (PasswordAuthentication no).
 
-Screenshot: `screenshots/triggered-alert.png`
+Configuration Test & Restart:
 
-The alert fired a few minutes after I started the hydra attack, showing the Kali VM's IP with over 100 failed attempts in a 5 minute window.
+Bash
+sudo sshd -t && sudo systemctl restart ssh
+Account Deactivation: Locked the decoy testing account:
 
----
+Bash
+sudo passwd -l testuser
+Skills & Technologies Demonstrated
+SIEM & Log Management: Splunk Enterprise, Splunk Universal Forwarder, SPL, Regex field extraction.
 
-## Lessons Learned
+Offensive Security / Emulation: Kali Linux, THC Hydra, Network recon.
 
-- The default `linux_secure` sourcetype in Splunk already parses SSH auth logs well, no extra field extraction was needed.
-- A count threshold of 5 is very low for a real environment and would cause false positives from normal typos. In a real SOC this would need tuning, or a time-based rate instead of a raw count.
-- Next step is to extend this into a proper correlation search that also checks if a login eventually succeeds after many failures, which is a stronger sign of a compromised account.
+Host & Cloud Security: Linux PAM auditing, OpenSSH daemon security profiles, privilege management (adm group), least-privilege forwarding.
 
----
+Detection Engineering: Alert thresholding, cron-based scheduling, SOC incident life-cycle.
 
-## What's Next
 
-- Map this detection to MITRE ATT&CK (T1110 - Brute Force)
-- Build a dashboard panel showing failed SSH attempts over time
-- Test the same detection against a slower, low-and-slow brute force to see if it still gets caught
+Kliknij zielony przycisk **Commit changes** (w prawym górnym rogu edytora), aby opublikować dokumentację.
+
+<Elicitations message="Gotowe do publikacji?">
+  <Elicitation label="Opublikowałem, sprawdźmy stronę" query="Opublikowałem plik README.md, czy zdjęcia wyświetlają się poprawnie?"/>
+  <Elicitation label="Problem z wyświetlaniem zdjęć" query="Któreś zdjęcie się nie ładuje na GitHubie, jak sprawdzić dlaczego?"/>
+</Elicitations>
 
