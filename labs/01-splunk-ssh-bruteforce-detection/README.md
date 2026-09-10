@@ -12,7 +12,7 @@ The objective was to gain practical experience with telemetry ingestion, Search 
 ```text
 +---------------------------+             +-------------------------------+
 |  Attacker Machine (Kali)  |  Internet   |      Target Host (Ubuntu)     |
-|     IP: 90.248.10.51      | ----------> |     Public IP: 51.195.218.73  |
+|     <ATTACKER_IP>         | ----------> |      <TARGET_VPS_IP>          |
 |      Tool: THC Hydra      |  (Port 22)  |   Log: /var/log/auth.log      |
 +---------------------------+             +---------------+---------------+
                                                           |
