@@ -22,7 +22,7 @@ The objective was to gain practical experience with telemetry ingestion, Search 
                                           +---------------+---------------+
                                           |     Splunk Enterprise SIEM    |
                                           |      (Hosted on Proxmox)      |
-                                          |          192.168.5.106        |
+                                          |          192.168.5.x          |
                                           +-------------------------------+
 ```
 
